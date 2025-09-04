@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Document metadata and compatibility settings -->
+    <meta charset="UTF-8" />
+    <!-- IE compatibility mode for older browsers -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Responsive design viewport for mobile compatibility -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Page title displayed in browser tab -->
+    <title>Wave Pattern</title>
+
+    <!-- Custom favicon - appears in browser tab and bookmarks -->
+    <link rel="icon" type="image/png" href="./assets/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="./assets/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="./assets/favicon/site.webmanifest" />
+
+    <!-- External stylesheets -->
+    <!-- Prism.js syntax highlighting theme for code display -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css"
+    />
+    <!-- Adobe Fonts (Typekit) for custom fonts -->
+    <link rel="stylesheet" href="https://use.typekit.net/kik6avp.css" />
+    <!-- Main stylesheet for page layout and styling -->
+    <link rel="stylesheet" href="./css/style.css" />
+
+    <!-- JavaScript libraries and scripts -->
+    <!-- p5.js library -->
+    <script src="lib/p5.min.js"></script>
+    
+    <!-- Prism.js core library for syntax highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <!-- Prism.js JavaScript language support for code highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+
+    <!-- Main sketch file for the wave pattern animation -->
+    <script src="./js/sketch-wavePattern.js"></script>
+  </head>
+  <body>
+    <main>
+        <div id="wave-background"></div>
+             <div class="page-title-container">
+        <div class="page-title"><h1>P5.js Wave Animation</h1></div>
+      </div>
+      <!-- Global Navigation -->
+      <nav class="main-nav">
+        <ul>
+          <li>
+            <a href="simpleSine.html" class="nav-link">Simple Sine Wave</a>
+          </li>
+          <li>
+            <a href="interactiveWave.html" class="nav-link active"
+              >Interactive Wave</a
+            >
+          </li>
+          <li><a href="wavePattern.html" class="nav-link">Wave Pattern</a></li>
+          <li>
+            <a href="resources.html" class="nav-link">Resources & Tutorials</a>
+          </li>
+        </ul>
+      </nav>
+        
+        <section class="page">
+        <div class="page-container">
+
+            <header class="subtitle-container">
+                <div class="page-subtitle">
+                    <h3>Wave Pattern Sketch</h3>
+                </div>
+            </header>
+
+            <div class="code-display-container" id="code-display-container">
+                <div class="code-section" id="code-section">
+                    <div class="code-header">
+                        <h4>Sketch Code</h4>
+                    </div>
+                    <pre class="code-ide">
+                        <code class="language-javascript" id="language-javascript">
+                            <p>
+let grid = [];
+let cols = 8;
+let rows = 8;
+
+let loc = 50;
+
+// let hasFilling = true;
+let currentShapeFillState = "filled";
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  createGrid();
+}
+
+function createGrid() {
+  // Calculate the size of cells
+
+  // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **
+  // **  * ** **
+  // **  ** **
+  // ** * **
+  // ** * **
+  // ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **
+
+  // Initial cell size for all cells
+  let initialSize = 20;
+  let colSpacing = (width - initialSize) / (cols - 1);
+  let rowSpacing = (height - initialSize) / (rows - 1);
+  grid = [];
+  for (let i = 0; i < cols; i++) {
+    grid[i] = [];
+    for (let j = 0; j < rows; j++) {
+      let x0 = initialSize / 2 + i * colSpacing;
+      let y0 = initialSize / 2 + j * rowSpacing;
+      let orbitRadius = min(colSpacing, rowSpacing) / 2 - initialSize / 2;
+      grid[i][j] = new Cell(x0, y0, orbitRadius, i * loc + j * loc);
+      grid[i][j].size = initialSize;
+    }
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  setup();
+}
+
+function draw() {
+  if (currentShapeFillState === "filled") {
+    drawFilledShapes();
+  } else {
+    currentShapeFillState = "not filled";
+    drawColoredStrokeShapes();
+  }
+}
+
+function drawFilledShapes() {
+  background(0);
+  noStroke();
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let cell = grid[i][j];
+      cell.update();
+      cell.display();
+      cell.hsbColor();
+      fill(cell.fill);
+      ellipse(cell.x0 + cell.x, cell.y0 + cell.y, cell.size, cell.size);
+      square(cell.x0 + cell.x - 100, cell.y0 + cell.y - 100, cell.size);
+    }
+  }
+}
+
+function drawColoredStrokeShapes() {
+  background(0);
+  noFill();
+  strokeWeight(3);
+  // Create a 2D grid
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let cell = grid[i][j];
+      cell.update();
+      cell.display();
+      cell.hsbColor();
+      stroke(cell.stroke);
+      ellipse(cell.x0 + cell.x, cell.y0 + cell.y, cell.size, cell.size);
+      square(cell.x0 + cell.x - 100, cell.y0 + cell.y - 100, cell.size);
+    }
+  }
+}
+
+function mousePressed() {
+  if (currentShapeFillState === "filled") {
+    currentShapeFillState = "not filled";
+  } else {
+    currentShapeFillState = "filled";
+  }
+}
+
+function mouseWheel(event) {
+  // Update each cell's size
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let cell = grid[i][j];
+      if (event.deltaY < 0) {
+        cell.size += 2;
+      } else if (event.deltaY > 0) {
+        cell.size -= 2;
+      }
+      cell.size = constrain(cell.size, 2, 100);
+    }
+  }
+  return false; // Prevent default
+}
+
+addEventListener("mouseWheel", function (event) {
+  mouseWheel(event);
+});
+
+class Cell {
+  constructor(x0, y0, r, angle, hue, saturation, brightness, fill, stroke) {
+    this.r = r;
+    this.angle = angle;
+    this.x0 = x0;
+    this.y0 = y0;
+    this.size = 20;
+    this.hue = hue;
+    this.saturation = saturation;
+    this.brightness = brightness;
+    this.fill = fill;
+    this.stroke = stroke;
+  }
+
+  update() {
+    this.x = this.r * cos(this.angle);
+    this.y = this.r * sin(this.angle);
+    this.angle += 0.05;
+  }
+
+  hsbColor() {
+    colorMode(HSB, 360);
+    this.hue = map(Math.cos(this.angle), -1, 1, 0, 360);
+    this.saturation = map(Math.cos(frameCount * 0.1), -1, 1, 50, 100);
+    this.brightness = map(Math.sin(frameCount * 0.1), -1, 1, 90, 100);
+    this.fill = color(
+      this.hue,
+      this.saturation * 5,
+      this.brightness * this.brightness
+    );
+    this.stroke = color(
+      this.hue,
+      this.saturation * 5,
+      this.brightness * this.brightness
+    );
+  }
+
+  display() {
+    // Placeholder for any additional display logic if needed
+  }
+}
+   
+                            </p>
+                        </code>
+                    </pre>
+                </div>
+                <div id="canvas-container">
+                    <div class="canvas-header" id="canvas-header">
+                        <h4>Live demo</h4>
+                    </div>
+                    <div id="canvas-wrapper">
+                        <!-- p5.js canvas will be inserted here -->
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <div class="code-header" id="wavePattern-instructions-container">
+                        <h4>Mouse Control</h4>
+                    </div>
+                    <div class="instructions-text-container">
+                        <div class="code-ide" id="wavePattern-instructions-text">
+                        <p>
+                            Scroll up / down: increase / decrease size of shapes.
+                            Left mouse button: toggle between filled and outline only shapes.
+                        </p>
+                    </div>
+                    <div class="button-container" id="button-container">
+                        <a class="button-link" id="index-button-link"
+                        href="index.html"
+                        >Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Renato Ferreira Costa - All rights reserved.</p>
+    </footer>
+  </body>
